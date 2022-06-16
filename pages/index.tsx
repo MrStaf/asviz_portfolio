@@ -2,7 +2,7 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import React, { useState } from "react";
 
 import { H1 } from "../components/Headers";
 import { Spacer } from "../components/Spacer";
@@ -31,41 +31,34 @@ const Cabochons = ({ link, color, colorLight }: { link: string; color: string; c
   );
 };
 
-const Card = ({ src, hasTransparentBg = false, alt }: { src: string; hasTransparentBg: boolean; alt: string }) => {
-  const hasSrc = !(src === "" || src === null || src === undefined);
-
-  return (
-    <div className={`flex-1 rounded-md relative ${(hasTransparentBg || !hasSrc) && "bg-white"} ${!hasSrc && "justify-center flex items-center"} aspect-square`}>
-      {hasSrc ? (
-        <Image src={src} layout="fill" objectFit="contain" alt={alt} className="rounded-md" />
-      ) : (
-        <svg className="w-5 h-5 mr-3 -ml-1 text-dark animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-      )}
-    </div>
-  );
-};
-
-const Modal = () => {
+const Modal = ({ modalOpen, setModalOpen }: { modalOpen: { src: string; alt: string; description: string }; setModalOpen: Function }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const { src, alt, description } = modalOpen;
   return (
     <>
-      <div className="fixed top-0 bottom-0 left-0 right-0 w-screen h-screen bg-[#00000060] z-[60] pt-8">
+      <div className={`${modalOpen.src === "" && "hidden"} fixed top-0 bottom-0 left-0 right-0 w-screen h-screen bg-[#00000060] z-[60] pt-8`}>
         <div className="relative w-full h-full">
-          <div className="absolute cursor-pointer top-5 right-5">
+          <div
+            className="absolute cursor-pointer top-5 right-5"
+            onClick={() => {
+              setModalOpen({ src: "", alt: "", description: "" });
+            }}>
             <Image src="/assets/cross.svg" width={32} height={32} alt="cross" className="z-[70]" />
           </div>
-          <div className="relative w-full h-full p-8">
-            <Image src="/arts/LogoKasar.png" layout="fill" objectFit="contain" alt="modal" />
+          <div className="w-full h-full p-10">
+            <div className="relative w-full h-full">{!(modalOpen.src === "") && <Image src={src} layout="fill" objectFit="contain" alt={alt} onContextMenu={(e) => e.preventDefault()} />}</div>
           </div>
-          <div className="absolute bottom-0 px-5 py-2 text-lg -translate-x-full bg-white">
-            <p>
-              Ex consectetur magna fugiat duis duis quis labore dolor id. Incididunt ullamco mollit nisi labore sint velit. Aliquip adipisicing incididunt quis dolore labore nisi do et ipsum. Aliqua esse nostrud cillum nulla commodo eiusmod et commodo in
-              magna labore sit Lorem. Cupidatat qui ex consectetur non officia fugiat. Ad laborum qui consequat proident do enim adipisicing minim. Sunt laborum dolor quis veniam proident laboris aute do eu. Nisi fugiat enim officia nostrud sint. Eiusmod
-              enim quis irure dolor cillum et est cupidatat et quis et dolor est. Sunt id consequat tempor pariatur nostrud esse ad. Culpa tempor eiusmod et qui magna quis laboris elit. Voluptate commodo consequat minim pariatur eiusmod. Magna ut culpa
-              minim aute labore nulla mollit magna do ullamco. Exercitation irure esse proident mollit cillum cupidatat.
-            </p>
+          <div className="absolute bottom-0 w-full px-5 py-2 text-lg bg-white">
+            <div className="relative flex justify-center w-full h-6 bg-white select-none">
+              <div
+                onClick={() => {
+                  setIsOpen((p) => !p);
+                }}
+                className="absolute flex items-center p-2 bg-white rounded-full cursor-pointer -top-6">
+                {!isOpen ? <Image src={"/assets/arrow_up.png"} width={32} height={32} alt="arrow" /> : <Image src={"/assets/arrow_down.svg"} width={32} height={32} alt="arrow" />}
+              </div>
+            </div>
+            <p className={`${!isOpen && "hidden"}`}>{description}</p>
           </div>
         </div>
       </div>
@@ -75,6 +68,37 @@ const Modal = () => {
 
 const Home: NextPage = () => {
   const [isDrawerActive, setIsDrawerActive] = useState(false);
+  const [modalOpen, setModalOpen] = useState({
+    src: "",
+    alt: "",
+    description: "",
+  });
+
+  const Card = ({ src, hasTransparentBg = false, alt }: { src: string; hasTransparentBg?: boolean; alt: string }) => {
+    const hasSrc = !(src === "" || src === null || src === undefined);
+
+    return (
+      <div
+        onClick={() =>
+          setModalOpen({
+            src: hasSrc ? src : "",
+            alt: alt,
+            description:
+              "Anim aute excepteur reprehenderit consequat dolore laboris cupidatat ut magna voluptate. Laborum cillum ipsum ad laboris ad irure enim. Aute officia culpa minim ullamco magna dolor duis. Occaecat aute aliquip aute officia veniam ad tempor duis anim laborum aute. Excepteur exercitation est adipisicing dolor aliquip velit excepteur. Ullamco in qui aliqua incididunt culpa fugiat aliqua pariatur ad sit consequat aliqua do. Elit duis adipisicing adipisicing officia cupidatat laborum. Do nostrud Lorem eu veniam est dolore exercitation commodo excepteur irure do. Fugiat quis velit nisi occaecat laborum ex veniam in ut reprehenderit ipsum do. Proident anim anim dolor ut dolor ad et elit.",
+          })
+        }
+        className={`flex-1 rounded-md relative ${(hasTransparentBg || !hasSrc) && "bg-white"} ${!hasSrc && "justify-center flex items-center"} aspect-square`}>
+        {hasSrc ? (
+          <Image src={src} layout="fill" objectFit="contain" alt={alt} className="rounded-md select-none" onContextMenu={(e) => e.preventDefault()} />
+        ) : (
+          <svg className="w-5 h-5 mr-3 -ml-1 text-dark animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        )}
+      </div>
+    );
+  };
   return (
     <>
       <Head>
@@ -92,14 +116,14 @@ const Home: NextPage = () => {
           </H1>
           <div className="w-64 mt-16 h-96 bg-slate-400" style={{ clipPath: " ellipse(40% 50% at 50% 50%)" }}></div>
         </div>
-        <Modal />
+        <Modal modalOpen={modalOpen} setModalOpen={setModalOpen} />
         <section className="relative flex flex-col items-center justify-between h-screen bg-white">
           <div className="fixed top-0 left-0 z-50 flex items-center justify-center w-12 h-12 mt-2 ml-2 font-bold cursor-pointer select-none rounded-xl hover:bg-slate-200 hover:text-rose-600" onClick={() => setIsDrawerActive((prev) => !prev)}>
             {!isDrawerActive ? <Image src="/assets/burger.svg" width={32} height={32} alt="burger" /> : <Image src="/assets/cross.svg" width={32} height={32} alt="cross" />}
           </div>
           <div className="pt-16 text-7xl font-title">Ambre Fage</div>
           <div className="absolute bottom-0 animate-bounce">
-            <Image src={"/assets/arrow_down.svg"} width={48} height={48} alt="cv" />
+            <Image src={"/assets/arrow_down.svg"} width={48} height={48} alt="arrow" />
           </div>
           <article className="w-full">
             <div className="flex justify-between w-full px-8 mt-8">
@@ -149,14 +173,14 @@ const Home: NextPage = () => {
           <article className="flex flex-col items-center justify-center w-full">
             <h1 className="mt-4 ml-8 text-5xl font-bold text-center font-title">Digital Art</h1>
             <div className="grid w-full max-w-6xl grid-cols-2 gap-10 mx-10 my-8">
-              <Card />
-              <Card />
-              <Card />
-              <Card />
-              <Card />
-              <Card />
-              <Card />
-              <Card />
+              <Card src="/arts/Couv_Boutia.png" alt="some art" />
+              <Card src="/arts/LogoKasar.png" alt="some art" hasTransparentBg={true} />
+              <Card src="/arts/Mage_Final.JPG" alt="some art" />
+              <Card src="/arts/Messecure_2.PNG" alt="some art" hasTransparentBg={true} />
+              <Card src="/arts/Protect_Earth.png" alt="some art" />
+              <Card src="/arts/Reveuse.PNG" alt="some art" />
+              <Card src="/arts/Roi_Dechu.PNG" alt="some art" />
+              <Card src="/arts/Valeria_Portrait.PNG" alt="some art" />
             </div>
           </article>
           <Spacer src="/wave/stacked-waves-haikei.svg" />
@@ -165,14 +189,14 @@ const Home: NextPage = () => {
           <article className="flex flex-col items-center justify-center w-full">
             <h1 className="mt-4 ml-8 text-5xl font-bold text-center font-title">Digital Art</h1>
             <div className="grid w-full max-w-6xl grid-cols-2 gap-10 mx-10 my-8">
-              <Card />
-              <Card />
-              <Card />
-              <Card />
-              <Card />
-              <Card />
-              <Card />
-              <Card />
+              <Card src="/arts/Couv_Boutia.png" alt="some art" />
+              <Card src="/arts/LogoKasar.png" alt="some art" hasTransparentBg={true} />
+              <Card src="/arts/Mage_Final.JPG" alt="some art" />
+              <Card src="/arts/Messecure_2.PNG" alt="some art" hasTransparentBg={true} />
+              <Card src="/arts/Protect_Earth.png" alt="some art" />
+              <Card src="/arts/Reveuse.PNG" alt="some art" />
+              <Card src="/arts/Roi_Dechu.PNG" alt="some art" />
+              <Card src="/arts/Valeria_Portrait.PNG" alt="some art" />
             </div>
           </article>
           <Spacer src="/wave/stacked-waves-haikei (1).svg" />
@@ -181,14 +205,14 @@ const Home: NextPage = () => {
           <article className="flex flex-col items-center justify-center w-full">
             <h1 className="mt-4 ml-8 text-5xl font-bold text-center font-title">Digital Art</h1>
             <div className="grid w-full max-w-6xl grid-cols-2 gap-10 mx-10 my-8">
-              <Card />
-              <Card />
-              <Card />
-              <Card />
-              <Card />
-              <Card />
-              <Card />
-              <Card />
+              <Card src="/arts/Couv_Boutia.png" alt="some art" />
+              <Card src="/arts/LogoKasar.png" alt="some art" hasTransparentBg={true} />
+              <Card src="/arts/Mage_Final.JPG" alt="some art" />
+              <Card src="/arts/Messecure_2.PNG" alt="some art" hasTransparentBg={true} />
+              <Card src="/arts/Protect_Earth.png" alt="some art" />
+              <Card src="/arts/Reveuse.PNG" alt="some art" />
+              <Card src="/arts/Roi_Dechu.PNG" alt="some art" />
+              <Card src="/arts/Valeria_Portrait.PNG" alt="some art" />
             </div>
           </article>
         </section>
