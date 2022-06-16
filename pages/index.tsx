@@ -1,4 +1,5 @@
-import type { NextPage } from "next";
+import axios from "axios";
+import type { GetStaticProps, NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
@@ -7,6 +8,48 @@ import React, { useState, useRef, useEffect } from "react";
 
 import { H1 } from "../components/Headers";
 import { Spacer } from "../components/Spacer";
+
+const FILE_URL = "https://content.benoit.fage.fr/assets/";
+
+interface Art {
+  id: number;
+  sort: number;
+  description: string;
+  image: string;
+  category: number;
+}
+
+interface Category {
+  id: number;
+  sort: number;
+  title: string;
+  color: string;
+  color_light: string;
+  wave: string;
+}
+
+interface Social {
+  id: number;
+  sort: number;
+  link: string;
+  logo: string;
+  name: string;
+}
+
+interface AboutMe {
+  id: number;
+  about_me: string;
+  background_imag: string;
+  social: Social[];
+  cv: string;
+}
+
+interface Props {
+  art: Art[];
+  categories: Category[];
+  aboutMe: AboutMe[];
+  socials: Social[];
+}
 
 const Social = ({ href, src, alt }: { href: string; src: string; alt: string }) => {
   return (
@@ -21,24 +64,34 @@ const Social = ({ href, src, alt }: { href: string; src: string; alt: string }) 
 };
 
 const Cabochons = ({ link, color, colorLight }: { link: string; color: string; colorLight: string }) => {
+  const [hover, setHover] = useState(false);
   return (
     <li>
       <Link href={link}>
         <a>
-          <div className={`bg-[${color}] hover:bg-[${colorLight}] w-12 h-12 shadow-xl cursor-pointer rounded-xl hover:opacity-80`}></div>
+          <div
+            onMouseEnter={() => {
+              setHover(true);
+            }}
+            onMouseLeave={() => {
+              setHover(false);
+            }}
+            style={{ background: hover ? colorLight : color }}
+            className={`w-12 h-12 shadow-xl cursor-pointer rounded-xl hover:opacity-80`}></div>
         </a>
       </Link>
     </li>
   );
 };
 
-const Home: NextPage = () => {
+const Home: NextPage<Props> = ({ art, aboutMe, categories, socials }) => {
   const [isDrawerActive, setIsDrawerActive] = useState(false);
   const [modalOpen, setModalOpen] = useState({
     src: "",
     alt: "",
     description: "",
   });
+  const about_me = aboutMe[0];
 
   const Modal = ({ modalOpen, setModalOpen }: { modalOpen: { src: string; alt: string; description: string }; setModalOpen: Function }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -74,7 +127,7 @@ const Home: NextPage = () => {
                   {!isOpen ? <Image src={"/assets/arrow_up.png"} width={32} height={32} alt="arrow" /> : <Image src={"/assets/arrow_down.svg"} width={32} height={32} alt="arrow" />}
                 </div>
               </div>
-              <p className={`${!isOpen && "hidden"}`}>{description}</p>
+              <div className={`${!isOpen && "hidden"}`} dangerouslySetInnerHTML={{ __html: description }}></div>
             </div>
           </div>
         </div>
@@ -82,7 +135,7 @@ const Home: NextPage = () => {
     );
   };
 
-  const Card = ({ src, hasTransparentBg = false, alt }: { src: string; hasTransparentBg?: boolean; alt: string }) => {
+  const Card = ({ src, hasTransparentBg = false, alt, description }: { src: string; hasTransparentBg?: boolean; alt: string; description: string }) => {
     const hasSrc = !(src === "" || src === null || src === undefined);
 
     return (
@@ -91,8 +144,7 @@ const Home: NextPage = () => {
           setModalOpen({
             src: hasSrc ? src : "",
             alt: alt,
-            description:
-              "Anim aute excepteur reprehenderit consequat dolore laboris cupidatat ut magna voluptate. Laborum cillum ipsum ad laboris ad irure enim. Aute officia culpa minim ullamco magna dolor duis. Occaecat aute aliquip aute officia veniam ad tempor duis anim laborum aute. Excepteur exercitation est adipisicing dolor aliquip velit excepteur. Ullamco in qui aliqua incididunt culpa fugiat aliqua pariatur ad sit consequat aliqua do. Elit duis adipisicing adipisicing officia cupidatat laborum. Do nostrud Lorem eu veniam est dolore exercitation commodo excepteur irure do. Fugiat quis velit nisi occaecat laborum ex veniam in ut reprehenderit ipsum do. Proident anim anim dolor ut dolor ad et elit.",
+            description: description,
           })
         }
         className={`flex-1 rounded-md relative ${(hasTransparentBg || !hasSrc) && "bg-white"} ${!hasSrc && "justify-center flex items-center"} aspect-square`}>
@@ -107,6 +159,7 @@ const Home: NextPage = () => {
       </div>
     );
   };
+  console.log(categories, FILE_URL);
   return (
     <>
       <Head>
@@ -137,96 +190,70 @@ const Home: NextPage = () => {
             <div className="flex justify-between w-full px-8 mt-8">
               <div className="flex flex-col w-full max-w-lg items-around">
                 <h1 className="mb-2 text-3xl uppercase font-title">About me</h1>
-                <p className="text-lg font-extralight">
-                  Nisi dolore non cillum aliquip velit do enim cillum nostrud labore pariatur anim reprehenderit nulla. Deserunt laborum excepteur dolore in aliquip mollit commodo consequat et anim nostrud. Ipsum aliqua in in laboris. Consectetur dolore
-                  dolor sit irure tempor consectetur dolore. Ipsum sunt in eiusmod exercitation ea magna sunt minim voluptate nostrud ad dolore aliquip. Id elit nostrud consequat ipsum velit ex qui mollit excepteur incididunt deserunt irure. Ea ex
-                  occaecat sunt esse amet sit. Incididunt officia ut commodo nulla qui magna. Aliquip in officia commodo quis cupidatat sit nulla ea.
-                </p>
+                <p className="text-lg font-extralight">{about_me.about_me}</p>
                 <ul className="flex justify-around mt-4">
-                  <Social href="eaxmple.com" src="/assets/icons8-twitter.svg" alt="twitter logo" />
-                  <Social href="eaxmple.com" src="/assets/icons8-facebook-circled.svg" alt="facebook logo" />
-                  <Social href="eaxmple.com" src="/assets/icons8-instagram-128.svg" alt="instagram logo" />
-                  <Social href="eaxmple.com" src="/assets/icons8-price-tag-64.png" alt="fiverr link" />
+                  {socials?.map(({ link, logo, name, id }: Social) => (
+                    <Social key={`social-${id}`} href={link} src={`${FILE_URL}${logo}`} alt={`${name} logo`} />
+                  ))}
                 </ul>
               </div>
               <div>
                 <ul className="fixed z-50 flex flex-col gap-4 p-2 bg-white shadow-xl right-5 rounded-xl">
-                  <Cabochons link="#section-1" color="#ff7799" colorLight="#ffa4bb" />
-                  <Cabochons link="#section-2" color="#9e7fff" colorLight="#c9b7ff" />
-                  <Cabochons link="#section-3" color="#6ebaff" colorLight="#a1d1ff" />
-                  <Cabochons link="#section-4" color="#ffc044" colorLight="#ffd589" />
+                  {categories?.map(({ id, color, color_light }: Category) => (
+                    <Cabochons key={`cabochons-${id}`} color={color} colorLight={color_light} link={`#section-${id}`} />
+                  ))}
                 </ul>
               </div>
             </div>
             <Spacer src="/wave/wave-haikei.svg" />
           </article>
         </section>
-        <section id="section-1" className="flex flex-col justify-between bg-[#ff7799]">
-          <article className="flex flex-col items-center justify-center w-full">
-            <h1 className="mt-4 ml-8 text-5xl font-bold text-center font-title">Digital Art</h1>
-            <div className="grid w-full max-w-6xl grid-cols-2 gap-10 mx-10 my-8">
-              <Card src="/arts/Couv_Boutia.png" alt="some art" />
-              <Card src="/arts/LogoKasar.png" alt="some art" hasTransparentBg={true} />
-              <Card src="/arts/Mage_Final.JPG" alt="some art" />
-              <Card src="/arts/Messecure_2.PNG" alt="some art" hasTransparentBg={true} />
-              <Card src="/arts/Protect_Earth.png" alt="some art" />
-              <Card src="/arts/Reveuse.PNG" alt="some art" />
-              <Card src="/arts/Roi_Dechu.PNG" alt="some art" />
-              <Card src="/arts/Valeria_Portrait.PNG" alt="some art" />
-            </div>
-          </article>
-          <Spacer src="/wave/layered-waves-haikei-2.svg" />
-        </section>
-        <section id="section-2" className="flex flex-col justify-between bg-[#9e7fff]">
-          <article className="flex flex-col items-center justify-center w-full">
-            <h1 className="mt-4 ml-8 text-5xl font-bold text-center font-title">Digital Art</h1>
-            <div className="grid w-full max-w-6xl grid-cols-2 gap-10 mx-10 my-8">
-              <Card src="/arts/Couv_Boutia.png" alt="some art" />
-              <Card src="/arts/LogoKasar.png" alt="some art" hasTransparentBg={true} />
-              <Card src="/arts/Mage_Final.JPG" alt="some art" />
-              <Card src="/arts/Messecure_2.PNG" alt="some art" hasTransparentBg={true} />
-              <Card src="/arts/Protect_Earth.png" alt="some art" />
-              <Card src="/arts/Reveuse.PNG" alt="some art" />
-              <Card src="/arts/Roi_Dechu.PNG" alt="some art" />
-              <Card src="/arts/Valeria_Portrait.PNG" alt="some art" />
-            </div>
-          </article>
-          <Spacer src="/wave/stacked-waves-haikei.svg" />
-        </section>
-        <section id="section-3" className="flex flex-col justify-between bg-[#6ebaff]">
-          <article className="flex flex-col items-center justify-center w-full">
-            <h1 className="mt-4 ml-8 text-5xl font-bold text-center font-title">Digital Art</h1>
-            <div className="grid w-full max-w-6xl grid-cols-2 gap-10 mx-10 my-8">
-              <Card src="/arts/Couv_Boutia.png" alt="some art" />
-              <Card src="/arts/LogoKasar.png" alt="some art" hasTransparentBg={true} />
-              <Card src="/arts/Mage_Final.JPG" alt="some art" />
-              <Card src="/arts/Messecure_2.PNG" alt="some art" hasTransparentBg={true} />
-              <Card src="/arts/Protect_Earth.png" alt="some art" />
-              <Card src="/arts/Reveuse.PNG" alt="some art" />
-              <Card src="/arts/Roi_Dechu.PNG" alt="some art" />
-              <Card src="/arts/Valeria_Portrait.PNG" alt="some art" />
-            </div>
-          </article>
-          <Spacer src="/wave/stacked-waves-haikei (1).svg" />
-        </section>
-        <section id="section-4" className="flex flex-col justify-between bg-[#ffc044]">
-          <article className="flex flex-col items-center justify-center w-full">
-            <h1 className="mt-4 ml-8 text-5xl font-bold text-center font-title">Digital Art</h1>
-            <div className="grid w-full max-w-6xl grid-cols-2 gap-10 mx-10 my-8">
-              <Card src="/arts/Couv_Boutia.png" alt="some art" />
-              <Card src="/arts/LogoKasar.png" alt="some art" hasTransparentBg={true} />
-              <Card src="/arts/Mage_Final.JPG" alt="some art" />
-              <Card src="/arts/Messecure_2.PNG" alt="some art" hasTransparentBg={true} />
-              <Card src="/arts/Protect_Earth.png" alt="some art" />
-              <Card src="/arts/Reveuse.PNG" alt="some art" />
-              <Card src="/arts/Roi_Dechu.PNG" alt="some art" />
-              <Card src="/arts/Valeria_Portrait.PNG" alt="some art" />
-            </div>
-          </article>
-        </section>
+        {categories?.map(({ id, color, title, wave }: Category) => (
+          <section id={`section-${id}`} key={`section-${id}`} style={{ background: color }} className={`relative flex flex-col items-center justify-between h-screen`}>
+            <article className="flex flex-col items-center justify-center w-full">
+              <h1 className="mt-4 ml-8 text-5xl font-bold text-center font-title">{title}</h1>
+              <div className="grid w-full max-w-6xl grid-cols-2 gap-10 mx-10 my-8">
+                {art
+                  ?.filter((art: Art) => art.category === id)
+                  ?.map(({ id, image, description }: Art) => (
+                    <Card key={`card-${id}`} src={FILE_URL + image} alt={`image-${id}`} description={description} />
+                  ))}
+              </div>
+            </article>
+
+            <Spacer src={`${FILE_URL}${wave}`} />
+          </section>
+        ))}
       </main>
     </>
   );
+};
+
+export const getStaticProps: GetStaticProps = async () => {
+  const art: {
+    data: {
+      data: Art[];
+    };
+  } = await axios.get(`${process.env.API_URL}/asviz_art`);
+  const aboutMe: {
+    data: {
+      data: AboutMe[];
+    };
+  } = await axios.get(`${process.env.API_URL}/asviz_infos`);
+  const categories: {
+    data: {
+      data: Category[];
+    };
+  } = await axios.get(`${process.env.API_URL}/asviz_categories`);
+  const socials: {
+    data: {
+      data: Social[];
+    };
+  } = await axios.get(`${process.env.API_URL}/asviz_socials`);
+  return {
+    props: { art: art.data.data, aboutMe: aboutMe.data.data, categories: categories.data.data, socials: socials.data.data },
+    // revalidate: 1,
+  };
 };
 
 export default Home;
