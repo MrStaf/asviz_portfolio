@@ -2,7 +2,8 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
+// import useComponentVisible from "../hooks/useComponentVisible";
 
 import { H1 } from "../components/Headers";
 import { Spacer } from "../components/Spacer";
@@ -31,41 +32,6 @@ const Cabochons = ({ link, color, colorLight }: { link: string; color: string; c
   );
 };
 
-const Modal = ({ modalOpen, setModalOpen }: { modalOpen: { src: string; alt: string; description: string }; setModalOpen: Function }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const { src, alt, description } = modalOpen;
-  return (
-    <>
-      <div className={`${modalOpen.src === "" && "hidden"} fixed top-0 bottom-0 left-0 right-0 w-screen h-screen bg-[#00000060] z-[60] pt-8`}>
-        <div className="relative w-full h-full">
-          <div
-            className="absolute cursor-pointer top-5 right-5"
-            onClick={() => {
-              setModalOpen({ src: "", alt: "", description: "" });
-            }}>
-            <Image src="/assets/cross.svg" width={32} height={32} alt="cross" className="z-[70]" />
-          </div>
-          <div className="w-full h-full p-10">
-            <div className="relative w-full h-full">{!(modalOpen.src === "") && <Image src={src} layout="fill" objectFit="contain" alt={alt} onContextMenu={(e) => e.preventDefault()} />}</div>
-          </div>
-          <div className="absolute bottom-0 w-full px-5 py-2 text-lg bg-white">
-            <div className="relative flex justify-center w-full h-6 bg-white select-none">
-              <div
-                onClick={() => {
-                  setIsOpen((p) => !p);
-                }}
-                className="absolute flex items-center p-2 bg-white rounded-full cursor-pointer -top-6">
-                {!isOpen ? <Image src={"/assets/arrow_up.png"} width={32} height={32} alt="arrow" /> : <Image src={"/assets/arrow_down.svg"} width={32} height={32} alt="arrow" />}
-              </div>
-            </div>
-            <p className={`${!isOpen && "hidden"}`}>{description}</p>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-};
-
 const Home: NextPage = () => {
   const [isDrawerActive, setIsDrawerActive] = useState(false);
   const [modalOpen, setModalOpen] = useState({
@@ -73,6 +39,48 @@ const Home: NextPage = () => {
     alt: "",
     description: "",
   });
+
+  const Modal = ({ modalOpen, setModalOpen }: { modalOpen: { src: string; alt: string; description: string }; setModalOpen: Function }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const { src, alt, description } = modalOpen;
+    return (
+      <>
+        <div className={`${modalOpen.src === "" && "hidden"} fixed top-0 bottom-0 left-0 right-0 w-screen h-screen bg-[#00000060] z-[60] pt-8`}>
+          <div className="relative w-full h-full">
+            <div
+              className="absolute top-0 cursor-pointer right-5"
+              onClick={() => {
+                setModalOpen({ src: "", alt: "", description: "" });
+              }}>
+              <Image src="/assets/cross.svg" width={48} height={48} alt="cross" className="z-[70]" />
+            </div>
+            <div className="w-full h-full p-10">
+              <div
+                className="relative w-full h-full select-none"
+                onBlur={() => {
+                  alert("a");
+                  setModalOpen({ src: "", alt: "", description: "" });
+                }}>
+                {!(modalOpen.src === "") && <Image src={src} layout="fill" objectFit="contain" alt={alt} onContextMenu={(e) => e.preventDefault()} />}
+              </div>
+            </div>
+            <div className="absolute bottom-0 w-full px-5 py-2 text-lg bg-white">
+              <div className="relative flex justify-center w-full h-6 bg-white select-none">
+                <div
+                  onClick={() => {
+                    setIsOpen((p) => !p);
+                  }}
+                  className="absolute flex items-center p-2 bg-white rounded-full cursor-pointer -top-6">
+                  {!isOpen ? <Image src={"/assets/arrow_up.png"} width={32} height={32} alt="arrow" /> : <Image src={"/assets/arrow_down.svg"} width={32} height={32} alt="arrow" />}
+                </div>
+              </div>
+              <p className={`${!isOpen && "hidden"}`}>{description}</p>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  };
 
   const Card = ({ src, hasTransparentBg = false, alt }: { src: string; hasTransparentBg?: boolean; alt: string }) => {
     const hasSrc = !(src === "" || src === null || src === undefined);
