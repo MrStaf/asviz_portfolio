@@ -39,9 +39,12 @@ interface Social {
 interface AboutMe {
   id: number;
   about_me: string;
-  background_imag: string;
+  background_image: string;
+  drawer_image: string;
   social: Social[];
   cv: string;
+  contact_pro: string;
+  light: boolean;
 }
 
 interface Props {
@@ -111,7 +114,6 @@ const Home: NextPage<Props> = ({ art, aboutMe, categories, socials }) => {
               <div
                 className="relative w-full h-full select-none"
                 onBlur={() => {
-                  alert("a");
                   setModalOpen({ src: "", alt: "", description: "" });
                 }}>
                 {!(modalOpen.src === "") && <Image src={src} layout="fill" objectFit="contain" alt={alt} onContextMenu={(e) => e.preventDefault()} />}
@@ -167,18 +169,28 @@ const Home: NextPage<Props> = ({ art, aboutMe, categories, socials }) => {
         <meta name="description" content="Miss Asviz portfolio" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="relative h-full bg-red-500 font-body">
+      <main className="relative h-full bg-white font-body">
         <div className={`${isDrawerActive ? "flex w-full" : "hidden"} z-40 fixed flex-col items-center h-full max-w-xs bg-slate-50 shadow-stone-600 shadow-xl`}>
-          <H1>galerie</H1>
-          <H1>cv</H1>
           <H1>
-            contact pro
-            <br />&<br /> commission
+            <Link href={!about_me?.cv ? "a" : about_me.cv}>
+              <a>cv</a>
+            </Link>
           </H1>
-          <div className="w-64 mt-16 h-96 bg-slate-400" style={{ clipPath: " ellipse(40% 50% at 50% 50%)" }}></div>
+          <H1>
+            <Link href={!about_me?.contact_pro ? "a" : about_me.contact_pro}>
+              <a>
+                contact pro
+                <br />&
+                <br /> commission
+              </a>
+            </Link>
+          </H1>
+          <div className="relative w-11/12 mt-16">{about_me.drawer_image && <Image objectFit="contain" layout="responsive" width="100%" height="100%" src={FILE_URL + about_me.drawer_image} alt="background image" />}</div>
         </div>
         <Modal modalOpen={modalOpen} setModalOpen={setModalOpen} />
-        <section className="relative flex flex-col items-center justify-between h-screen bg-white">
+        <section
+          style={{ backgroundImage: `url('${FILE_URL + about_me.background_image}')`, backgroundPosition: "center", backgroundRepeat: "none" }}
+          className={`cover relative flex flex-col items-center justify-between h-screen ${about_me.light ? "text-black" : "text-white"}`}>
           <div className="fixed top-0 left-0 z-50 flex items-center justify-center w-12 h-12 mt-2 ml-2 font-bold cursor-pointer select-none rounded-xl hover:bg-slate-200 hover:text-rose-600" onClick={() => setIsDrawerActive((prev) => !prev)}>
             {!isDrawerActive ? <Image src="/assets/burger.svg" width={32} height={32} alt="burger" /> : <Image src="/assets/cross.svg" width={32} height={32} alt="cross" />}
           </div>
@@ -190,7 +202,7 @@ const Home: NextPage<Props> = ({ art, aboutMe, categories, socials }) => {
             <div className="flex justify-between w-full px-8 mt-8">
               <div className="flex flex-col w-full max-w-lg items-around">
                 <h1 className="mb-2 text-3xl uppercase font-title">About me</h1>
-                <p className="text-lg font-extralight">{about_me.about_me}</p>
+                <div className="text-lg font-extralight" dangerouslySetInnerHTML={{ __html: about_me.about_me }}></div>
                 <ul className="flex justify-around mt-4">
                   {socials?.map(({ link, logo, name, id }: Social) => (
                     <Social key={`social-${id}`} href={link} src={`${FILE_URL}${logo}`} alt={`${name} logo`} />
@@ -252,7 +264,7 @@ export const getStaticProps: GetStaticProps = async () => {
   } = await axios.get(`${process.env.API_URL}/asviz_socials`);
   return {
     props: { art: art.data.data, aboutMe: aboutMe.data.data, categories: categories.data.data, socials: socials.data.data },
-    // revalidate: 1,
+    revalidate: 20,
   };
 };
 
