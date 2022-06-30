@@ -1,167 +1,41 @@
+// Modules
 import axios from "axios";
 import type { GetStaticProps, NextPage } from "next";
+import { useRouter } from "next/router";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState, useRef, useEffect } from "react";
-// import useComponentVisible from "../hooks/useComponentVisible";
+import React, { useState, useEffect } from "react";
 
+// Components
+import { Social as SocialComp } from "../components/Social";
 import { H1 } from "../components/Headers";
 import { Spacer } from "../components/Spacer";
+import { Cabochons } from "../components/Cabochons";
+import { Card } from "../components/Card";
+import { Modal } from "../components/Modal";
+
+// Types
+import Art from "../types/art.type";
+import Category from "../types/category.type";
+import Social from "../types/social.type";
+import AboutMe from "../types/about_me.type";
+import Props from "../types/props.type";
 
 const FILE_URL = "https://content.benoit.fage.fr/assets/";
 
-interface Art {
-  id: number;
-  sort: number;
-  description: string;
-  image: string;
-  category: number;
-}
-
-interface Category {
-  id: number;
-  sort: number;
-  title: string;
-  color: string;
-  color_light: string;
-  wave: string;
-}
-
-interface Social {
-  id: number;
-  sort: number;
-  link: string;
-  logo: string;
-  name: string;
-}
-
-interface AboutMe {
-  id: number;
-  about_me: string;
-  background_image: string;
-  drawer_image: string;
-  social: Social[];
-  cv: string;
-  contact_pro: string;
-  light: boolean;
-}
-
-interface Props {
-  art: Art[];
-  categories: Category[];
-  aboutMe: AboutMe[];
-  socials: Social[];
-}
-
-const Social = ({ href, src, alt }: { href: string; src: string; alt: string }) => {
-  return (
-    <li>
-      <Link href={href}>
-        <a target="_blank" rel="no-refferrer">
-          <Image src={src} width={32} height={32} alt={alt} />
-        </a>
-      </Link>
-    </li>
-  );
-};
-
-const Cabochons = ({ link, color, colorLight }: { link: string; color: string; colorLight: string }) => {
-  const [hover, setHover] = useState(false);
-  return (
-    <li>
-      <Link href={link}>
-        <a>
-          <div
-            onMouseEnter={() => {
-              setHover(true);
-            }}
-            onMouseLeave={() => {
-              setHover(false);
-            }}
-            style={{ background: hover ? colorLight : color }}
-            className={`w-12 h-12 shadow-xl cursor-pointer rounded-xl hover:opacity-80`}></div>
-        </a>
-      </Link>
-    </li>
-  );
-};
-
 const Home: NextPage<Props> = ({ art, aboutMe, categories, socials }) => {
   const [isDrawerActive, setIsDrawerActive] = useState(false);
-  const [modalOpen, setModalOpen] = useState({
-    src: "",
-    alt: "",
-    description: "",
-  });
+  const [modalOpen, setModalOpen] = useState(-1);
   const about_me = aboutMe[0];
+  // get the query id with next router
+  const router = useRouter();
+  useEffect(() => {
+    const id = "" + router.query.id;
+    const artId = id ? parseInt(id) : -1;
+    setModalOpen(artId);
+  }, [router]);
 
-  const Modal = ({ modalOpen, setModalOpen }: { modalOpen: { src: string; alt: string; description: string }; setModalOpen: Function }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const { src, alt, description } = modalOpen;
-    return (
-      <>
-        <div className={`${modalOpen.src === "" && "hidden"} fixed top-0 bottom-0 left-0 right-0 w-screen h-screen bg-[#00000060] z-[60] pt-8`}>
-          <div className="relative w-full h-full">
-            <div
-              className="absolute top-0 cursor-pointer right-5"
-              onClick={() => {
-                setModalOpen({ src: "", alt: "", description: "" });
-              }}>
-              <Image src="/assets/cross.svg" width={48} height={48} alt="cross" className="z-[70]" />
-            </div>
-            <div className="w-full h-full p-10">
-              <div
-                className="relative w-full h-full select-none"
-                onBlur={() => {
-                  setModalOpen({ src: "", alt: "", description: "" });
-                }}>
-                {!(modalOpen.src === "") && <Image src={src} layout="fill" objectFit="contain" alt={alt} onContextMenu={(e) => e.preventDefault()} />}
-              </div>
-            </div>
-            <div className="absolute bottom-0 w-full px-5 py-2 text-lg bg-white">
-              <div className="relative flex justify-center w-full h-6 bg-white select-none">
-                <div
-                  onClick={() => {
-                    setIsOpen((p) => !p);
-                  }}
-                  className="absolute flex items-center p-2 bg-white rounded-full cursor-pointer -top-6">
-                  {!isOpen ? <Image src={"/assets/arrow_up.png"} width={32} height={32} alt="arrow" /> : <Image src={"/assets/arrow_down.svg"} width={32} height={32} alt="arrow" />}
-                </div>
-              </div>
-              <div className={`${!isOpen && "hidden"}`} dangerouslySetInnerHTML={{ __html: description }}></div>
-            </div>
-          </div>
-        </div>
-      </>
-    );
-  };
-
-  const Card = ({ src, hasTransparentBg = false, alt, description }: { src: string; hasTransparentBg?: boolean; alt: string; description: string }) => {
-    const hasSrc = !(src === "" || src === null || src === undefined);
-
-    return (
-      <div
-        onClick={() =>
-          setModalOpen({
-            src: hasSrc ? src : "",
-            alt: alt,
-            description: description,
-          })
-        }
-        className={`flex-1 rounded-md relative ${(hasTransparentBg || !hasSrc) && "bg-white"} ${!hasSrc && "justify-center flex items-center"} aspect-square`}>
-        {hasSrc ? (
-          <Image src={src} layout="fill" objectFit="contain" alt={alt} className="rounded-md select-none" onContextMenu={(e) => e.preventDefault()} />
-        ) : (
-          <svg className="w-5 h-5 mr-3 -ml-1 text-dark animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-        )}
-      </div>
-    );
-  };
-  console.log(categories, FILE_URL);
   return (
     <>
       <Head>
@@ -187,7 +61,7 @@ const Home: NextPage<Props> = ({ art, aboutMe, categories, socials }) => {
           </H1>
           <div className="relative w-11/12 mt-16">{about_me.drawer_image && <Image objectFit="contain" layout="responsive" width="100%" height="100%" src={FILE_URL + about_me.drawer_image} alt="background image" />}</div>
         </div>
-        <Modal modalOpen={modalOpen} setModalOpen={setModalOpen} />
+        <Modal router={router} modalOpen={modalOpen} setModalOpen={setModalOpen} arts={art} />
         <section
           style={{ backgroundImage: `url('${FILE_URL + about_me.background_image}')`, backgroundPosition: "center", backgroundRepeat: "none" }}
           className={`cover relative flex flex-col items-center justify-between h-screen ${about_me.light ? "text-black" : "text-white"}`}>
@@ -205,7 +79,7 @@ const Home: NextPage<Props> = ({ art, aboutMe, categories, socials }) => {
                 <div className="text-lg font-extralight" dangerouslySetInnerHTML={{ __html: about_me.about_me }}></div>
                 <ul className="flex justify-around mt-4">
                   {socials?.map(({ link, logo, name, id }: Social) => (
-                    <Social key={`social-${id}`} href={link} src={`${FILE_URL}${logo}`} alt={`${name} logo`} />
+                    <SocialComp key={`social-${id}`} href={link} src={`${FILE_URL}${logo}`} alt={`${name} logo`} />
                   ))}
                 </ul>
               </div>
@@ -221,14 +95,14 @@ const Home: NextPage<Props> = ({ art, aboutMe, categories, socials }) => {
           </article>
         </section>
         {categories?.map(({ id, color, title, wave }: Category) => (
-          <section id={`section-${id}`} key={`section-${id}`} style={{ background: color }} className={`relative flex flex-col items-center justify-between h-screen`}>
+          <section id={`section-${id}`} key={`section-${id}`} style={{ background: color }} className={`relative flex flex-col items-center justify-between min-h-screen`}>
             <article className="flex flex-col items-center justify-center w-full">
               <h1 className="mt-4 ml-8 text-5xl font-bold text-center font-title">{title}</h1>
-              <div className="grid w-full max-w-6xl grid-cols-2 gap-10 mx-10 my-8">
+              <div className="grid w-full max-w-6xl grid-cols-1 gap-10 px-4 mt-8 sm:px-10 sm:grid-cols-2">
                 {art
                   ?.filter((art: Art) => art.category === id)
-                  ?.map(({ id, image, description }: Art) => (
-                    <Card key={`card-${id}`} src={FILE_URL + image} alt={`image-${id}`} description={description} />
+                  ?.map(({ id, image }: Art) => (
+                    <Card router={router} id={id} key={`card-${id}`} src={`${FILE_URL}${image}`} alt={`image-${id}`} setModalOpen={setModalOpen} />
                   ))}
               </div>
             </article>
