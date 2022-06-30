@@ -102,7 +102,7 @@ const Home: NextPage<Props> = ({ art, aboutMe, categories, socials }) => {
                 {art
                   ?.filter((art: Art) => art.category === id)
                   ?.map(({ id, image }: Art) => (
-                    <Card router={router} id={id} key={`card-${id}`} src={`${FILE_URL}${image}`} alt={`image-${id}`} setModalOpen={setModalOpen} />
+                    <Card id={id} key={`card-${id}`} src={`${FILE_URL}${image}`} alt={`image-${id}`} setModalOpen={setModalOpen} />
                   ))}
               </div>
             </article>
