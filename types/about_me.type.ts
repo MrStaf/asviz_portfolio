@@ -9,6 +9,7 @@ interface AboutMe {
   cv: string;
   contact_pro: string;
   light: boolean;
+  title: string;
 }
 
 export default AboutMe;

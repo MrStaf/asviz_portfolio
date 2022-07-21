@@ -4,5 +4,7 @@ interface Art {
   description: string;
   image: string;
   category: number;
+  hastransparentbackground: boolean;
+  images: string[];
 }
 export default Art;
