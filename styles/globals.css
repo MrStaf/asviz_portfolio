@@ -2,6 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .animated-loading-card {
+    background: linear-gradient(-45deg, transparent 30%, rgba(180,180,180,0.25) 50%, transparent 70%) 0 0 / 200% 100%, rgba(255,255,255,.80);
+    animation: load 2s infinite linear;
+  }
+  @keyframes load {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+  .showModal {
+    opacity:1;
+    transform: scale(1);
+    animation: show 0.4s ease-in-out;
+  }
+  .hideModal {
+    opacity:0;
+    transform: scale(0);
+    animation: hide .2s ease-in-out;
+  }
+
+  @keyframes show {
+    from {
+      transform: scale(0);
+
+    }
+    to {
+      transform: scale(1);
+    }
+  }
+  @keyframes hide {
+    from {
+      transform: scale(1);
+      opacity: 1;
+    }
+    to {
+      transform: scale(0);
+    }
+  }
+}
+
 /* latin-ext */
 @font-face {
   font-family: 'Abril Fatface';

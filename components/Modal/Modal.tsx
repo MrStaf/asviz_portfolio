@@ -1,8 +1,9 @@
-import { useEffect, useState, KeyboardEvent } from "react";
+import { useEffect, useState, KeyboardEvent, useRef } from "react";
 import Image from "next/image";
 import Art from "../../types/art.type";
 import { Toaster, toast } from "react-hot-toast";
 import type { NextRouter } from "next/router";
+import { useSpring, animated, config, to } from "react-spring";
 
 const FILE_URL = "https://content.benoit.fage.fr/assets/";
 
@@ -11,6 +12,12 @@ const Modal = ({ modalOpen, setModalOpen, arts, router }: { modalOpen: number; s
   const [description, setDescription] = useState<string>("");
   const [arrows, setArrows] = useState<boolean>(false);
   const [isOpen, setIsOpen] = useState(false);
+  const { h } = useSpring({
+    from: { h: -100 },
+    h: isOpen ? 0 : -100,
+    config: config.molasses,
+  });
+
   useEffect(() => {
     const { image, description, images } = arts.find((art) => art.id === modalOpen) || { image: "", description: "" };
     setImage(image);
@@ -19,6 +26,7 @@ const Modal = ({ modalOpen, setModalOpen, arts, router }: { modalOpen: number; s
     const arr = images?.length === undefined ? false : images.length > 1;
     setArrows(arr);
   }, [modalOpen, arts]);
+
   const share = () => {
     const domain = window.location.origin;
     navigator.clipboard.writeText(`${domain}/?id=${modalOpen}`);
@@ -55,7 +63,7 @@ const Modal = ({ modalOpen, setModalOpen, arts, router }: { modalOpen: number; s
   };
   return (
     <>
-      <div onKeyDown={EventArrowKey} tabIndex={0} className={`${image === "" ? "hidden" : ""} fixed top-0 bottom-0 left-0 right-0 w-screen h-screen bg-[#00000060] z-[60] pt-8`}>
+      <div onKeyDown={EventArrowKey} tabIndex={0} className={`${image === "" ? "hideModal" : "showModal"} fixed top-0 bottom-0 left-0 right-0 w-screen h-screen bg-[#ffffff] z-[60] pt-8`}>
         <Toaster position="bottom-right" reverseOrder={false} />
         <div className="relative w-full h-full">
           {arrows && (
@@ -75,7 +83,7 @@ const Modal = ({ modalOpen, setModalOpen, arts, router }: { modalOpen: number; s
               setModalOpen(-1);
               RemoveQueryId();
             }}>
-            <Image src="/assets/cross.svg" width={48} height={48} alt="cross" className="hover:bg-slate-200 z-[70] bg-white px-1 py-1 rounded-md" />
+            <Image src="/assets/cross.svg" width={32} height={32} alt="cross" className="hover:bg-slate-200 z-[70] bg-white px-1 py-1 rounded-md" />
           </div>
 
           <div className="w-full h-full p-10">
@@ -86,10 +94,10 @@ const Modal = ({ modalOpen, setModalOpen, arts, router }: { modalOpen: number; s
                 setModalOpen(-1);
                 RemoveQueryId();
               }}>
-              {!(image === "") && <Image src={`${FILE_URL}${image}`} layout="fill" objectFit="contain" alt={`${image} image`} onContextMenu={(e) => e.preventDefault()} />}
+              {!(image === "") && <Image src={`${FILE_URL}${image}`} priority={true} layout="fill" objectFit="contain" alt={`${image} image`} onContextMenu={(e) => e.preventDefault()} />}
             </div>
           </div>
-          <div className="absolute bottom-0 w-full px-5 py-2 text-lg bg-white">
+          <div className="absolute bottom-0 flex flex-col w-full px-5 py-2 text-lg bg-white">
             <div onClick={share} className="absolute flex items-center p-2 cursor-pointer top-1 right-6">
               <Image src="/assets/icons8-partager-128.png" width={24} height={24} alt="share" className="z-[70]" />
             </div>
@@ -102,7 +110,7 @@ const Modal = ({ modalOpen, setModalOpen, arts, router }: { modalOpen: number; s
                 {!isOpen ? <Image src={"/assets/arrow_up.png"} width={32} height={32} alt="arrow" /> : <Image src={"/assets/arrow_down.svg"} width={32} height={32} alt="arrow" />}
               </div>
             </div>
-            <div className={`${!isOpen && "hidden"}`} dangerouslySetInnerHTML={{ __html: description }}></div>
+            <div className="flex flex-col w-full" style={{ height: "50%" }} dangerouslySetInnerHTML={{ __html: description }}></div>
           </div>
         </div>
       </div>
