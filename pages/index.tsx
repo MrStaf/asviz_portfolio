@@ -25,7 +25,7 @@ import Asviz_art_directus_files from "../types/images.type";
 
 const FILE_URL = "https://content.benoit.fage.fr/assets/";
 
-const Home: NextPage<Props> = ({ art, aboutMe, categories, socials, asviz_art_directus_files }) => {
+const Home: NextPage<Props> = ({ art, aboutMe, categories, socials}) => {
   const [isDrawerActive, setIsDrawerActive] = useState(false);
   const [modalOpen, setModalOpen] = useState(-1);
   const about_me = aboutMe[0];
@@ -40,18 +40,18 @@ const Home: NextPage<Props> = ({ art, aboutMe, categories, socials, asviz_art_di
   useEffect(() => {
     const art_new = art.map((art: Art) => {
       art.images = [art.image];
-      asviz_art_directus_files.map((image: Asviz_art_directus_files) => {
-        if (image.asviz_art_id === art.id) {
-          if (art.images.includes(image.directus_files_id)) {
-            return;
-          }
-          art.images.push(image.directus_files_id);
-        }
-      });
+      // asviz_art_directus_files.map((image: Asviz_art_directus_files) => {
+      //   if (image.asviz_art_id === art.id) {
+      //     if (art.images.includes(image.directus_files_id)) {
+      //       return;
+      //     }
+      //     art.images.push(image.directus_files_id);
+      //   }
+      // });
       return art;
     });
     setArts(art_new);
-  }, [art, asviz_art_directus_files]);
+  }, [art]);
   return (
     <>
       <Head>
@@ -152,13 +152,13 @@ export const getStaticProps: GetStaticProps = async () => {
       data: Social[];
     };
   } = await axios.get(`${process.env.API_URL}/asviz_socials`);
-  const asviz_art_directus_files: {
-    data: {
-      data: Asviz_art_directus_files[];
-    };
-  } = await axios.get(`${process.env.API_URL}/asviz_art_directus_files`);
+  // const asviz_art_directus_files: {
+  //   data: {
+  //     data: Asviz_art_directus_files[];
+  //   };
+  // } = await axios.get(`${process.env.API_URL}/asviz_art_directus_files`);
   return {
-    props: { art: art.data.data, aboutMe: aboutMe.data.data, categories: categories.data.data, socials: socials.data.data, asviz_art_directus_files: asviz_art_directus_files.data.data },
+    props: { art: art.data.data, aboutMe: aboutMe.data.data, categories: categories.data.data, socials: socials.data.data },
     revalidate: 20,
   };
 };
