@@ -3,7 +3,7 @@ import Image from "next/image";
 import Art from "../../types/art.type";
 import { Toaster, toast } from "react-hot-toast";
 import type { NextRouter } from "next/router";
-import { useSpring, animated, config, to } from "react-spring";
+import { useSpring, animated} from "react-spring";
 
 const FILE_URL = "https://content.benoit.fage.fr/assets/";
 
@@ -12,11 +12,14 @@ const Modal = ({ modalOpen, setModalOpen, arts, router }: { modalOpen: number; s
   const [description, setDescription] = useState<string>("");
   const [arrows, setArrows] = useState<boolean>(false);
   const [isOpen, setIsOpen] = useState(false);
-  const { h } = useSpring({
-    from: { h: -100 },
-    h: isOpen ? 0 : -100,
-    config: config.molasses,
-  });
+
+  const [props, api] = useSpring(
+    () => ({
+      from: { height: 200 },
+      to: { height: 500 },
+    }),
+    []
+  )
 
   useEffect(() => {
     const { image, description, images } = arts.find((art) => art.id === modalOpen) || { image: "", description: "" };
@@ -105,12 +108,16 @@ const Modal = ({ modalOpen, setModalOpen, arts, router }: { modalOpen: number; s
               <div
                 onClick={() => {
                   setIsOpen((p) => !p);
+                  api.start({ height: isOpen ? 0 : 500 });
                 }}
                 className="absolute flex items-center p-2 bg-white rounded-full cursor-pointer hover:bg-slate-200 -top-6">
                 {!isOpen ? <Image src={"/assets/arrow_up.png"} width={32} height={32} alt="arrow" /> : <Image src={"/assets/arrow_down.svg"} width={32} height={32} alt="arrow" />}
               </div>
             </div>
-            <div className="flex flex-col w-full" style={{ height: "50%" }} dangerouslySetInnerHTML={{ __html: description }}></div>
+            <animated.div className="flex flex-col w-full" style={{
+              height: props.height.to((h) => `${h}px`),
+              overflow: "hidden",
+            }} dangerouslySetInnerHTML={{ __html: description }}></animated.div>
           </div>
         </div>
       </div>
